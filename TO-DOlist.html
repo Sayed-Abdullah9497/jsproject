@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-do List</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@tailwindcss/browser@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-100 to-gray-300 min-h-screen flex flex-col items-center justify-start pt-12">
+
+    <h1 class="text-4xl font-semibold text-gray-800 mb-8">My To-do List</h1>
+     <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center mb-4">
+            <input type="text" id="todo-input" placeholder="Add a new task..." class="flex-grow rounded-l-md border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2">
+            <select id="priority-select" class="bg-gray-200 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ml-2">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+            </select>
+            <button id="add-button" class="bg-blue-500 hover:bg-blue-600 text-white rounded-r-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 ml-2">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus-circle"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+            </button>
+        </div>
+        <ul id="todo-list" class="space-y-3">
+            </ul>
+    </div>
+
+    <script>
+        const todoInput = document.getElementById('todo-input');
+        const addButton = document.getElementById('add-button');
+        const todoList = document.getElementById('todo-list');
+        const prioritySelect = document.getElementById('priority-select');
+
+        // Load tasks from local storage
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+        // Function to add a new task to the list
+        function addTask() {
+            const taskText = todoInput.value.trim(); // Get the task text and remove extra spaces
+            const priority = prioritySelect.value;
+
+            if (taskText === '') {
+                alert('Please enter a task!'); // Show an alert if the input is empty
+                return; // Stop adding the task if the input is empty
+            }
+
+            // Create a new task object
+            const newTask = {
+                text: taskText,
+                completed: false,
+                priority: priority
+            };
+
+            tasks.push(newTask); // Add the new task to the tasks array
+            localStorage.setItem('tasks', JSON.stringify(tasks)); // Save tasks to local storage
+            renderTasks(); // Re-render the task list to display the new task
+            todoInput.value = ''; // Clear the input field
+        }
+
+
+
+        // Function to toggle the completion status of a task
+        function toggleComplete(event) {
+            const listItem = event.target.closest('li');
+            const taskId = listItem.dataset.taskId;
+
+            const taskIndex = tasks.findIndex(task => task.id === taskId);
+            if (taskIndex !== -1) {
+                tasks[taskIndex].completed = !tasks[taskIndex].completed;
+                localStorage.setItem('tasks', JSON.stringify(tasks)); // Save to local storage
+            }
+             renderTasks();
+        }
+
+        // Function to delete a task from the list
+       function deleteTask(event) {
+            const listItem = event.target.closest('li');
+            const taskId = listItem.dataset.taskId;
+            const taskIndex = tasks.findIndex(task => task.id === taskId);
+
+            if (taskIndex !== -1) {
+                tasks.splice(taskIndex, 1);
+                localStorage.setItem('tasks', JSON.stringify(tasks)); // Save to local storage
+            }
+            renderTasks();
+        }
+
+        function getPriorityColor(priority) {
+            switch (priority) {
+                case 'high': return 'bg-red-500 text-white';
+                case 'medium': return 'bg-yellow-500 text-gray-800';
+                case 'low': return 'bg-green-500 text-white';
+                default: return '';
+            }
+        }
+
+        // Function to render the task list
+        function renderTasks() {
+            todoList.innerHTML = ''; // Clear the existing list
+
+            // Sort tasks by priority (high > medium > low) and then by completion status
+            const sortedTasks = [...tasks].sort((a, b) => {
+                if (a.completed === b.completed) {
+                    const priorityOrder = { high: 1, medium: 2, low: 3 };
+                    return priorityOrder[a.priority] - priorityOrder[b.priority];
+                }
+                return a.completed ? 1 : -1; // Completed tasks at the end
+            });
+
+            sortedTasks.forEach(task => {
+                const listItem = document.createElement('li');
+                listItem.className = "flex items-center justify-between bg-gray-50 p-3 rounded-lg";
+                listItem.dataset.taskId = task.id; // Set a data attribute to store the task ID
+
+                const checkbox = document.createElement('input');
+                checkbox.type = "checkbox";
+                checkbox.className = "mr-2 rounded-md text-blue-500 focus:ring-blue-500 h-5 w-5";
+                checkbox.checked = task.completed;
+                checkbox.addEventListener('change', toggleComplete);
+
+                const taskSpan = document.createElement('span');
+                taskSpan.textContent = task.text;
+                taskSpan.className = task.completed ? "flex-grow line-through text-gray-400" : "flex-grow";
+
+                const prioritySpan = document.createElement('span');
+                prioritySpan.textContent = task.priority;
+                prioritySpan.className = `${getPriorityColor(task.priority)} px-2 py-1 rounded-full text-xs font-semibold mr-2`;
+
+                const deleteButton = document.createElement('button');
+                deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-circle text-gray-400 hover:text-red-500 transition-colors duration-200"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>`;
+                deleteButton.className = "p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500";
+                deleteButton.addEventListener('click', deleteTask);
+
+                listItem.appendChild(checkbox);
+                listItem.appendChild(taskSpan);
+                listItem.appendChild(prioritySpan);
+                listItem.appendChild(deleteButton);
+                todoList.appendChild(listItem);
+            });
+        }
+
+        // Event Listeners
+        addButton.addEventListener('click', addTask);
+        todoInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        // Initial rendering of tasks
+        renderTasks();
+    </script>
+</body>
+</html>
