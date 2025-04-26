@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Pacman Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #000;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 16px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #ffdb58;
+            text-shadow: 0 0 10px #ffdb58;
+            text-align: center;
+        }
+
+        @media (min-width: 640px) {
+            h1 {
+                font-size: 3rem;
+                margin-bottom: 2rem;
+            }
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+        }
+
+        #game-canvas {
+            border: 4px solid #2121ff;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(33, 33, 255, 0.5);
+            width: 100%;
+            height: auto;
+            aspect-ratio: 4 / 3;
+            background: #000;
+        }
+
+        .game-over-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 10;
+        }
+
+        .game-over-content {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 4px solid #3b82f6;
+            background-color: #000;
+        }
+
+
+        @media (min-width: 640px) {
+            .game-over-content {
+                padding: 2rem;
+            }
+        }
+
+        .game-over-title {
+            font-size: 1rem;
+            color: #f87171;
+            margin-bottom: 1rem;
+        }
+
+
+        @media (min-width: 640px) {
+            .game-over-title {
+                font-size: 1.875rem;
+            }
+        }
+
+        .game-over-score {
+            font-size: 0.875rem;
+            color: #fff;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .game-over-score {
+                font-size: 1.25rem;
+            }
+        }
+
+        .play-again-button {
+            padding: 0.5rem 1rem;
+            background-color: #3b82f6;
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 0.75rem;
+            margin: 0.5rem;
+            border: none;
+        }
+
+        @media (min-width: 640px) {
+            .play-again-button {
+                padding: 0.75rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .play-again-button:hover {
+            background-color: #2563eb;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .difficulty-button {
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            background-color: #3b82f6;
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 0.75rem;
+            border: none;
+        }
+
+        .difficulty-button:hover {
+            background-color: #2563eb;
+        }
+        .difficulty-button.active {
+            background-color: #1e40af;
+            box-shadow: 0 0 5px #fff;
+        }
+        .instructions-box {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background-color: rgba(0, 0, 0, 0.9);
+          border: 4px solid #3b82f6;
+          border-radius: 8px;
+          padding: 1rem;
+          color: #fff;
+          z-index: 11;
+          text-align: center;
+          max-width: 80%;
+        }
+
+        .instructions-box h2 {
+          font-size: 1.2rem;
+          margin-bottom: 0.5rem;
+          color: #ffdb58;
+        }
+        .instructions-box p{
+            font-size: 0.6rem;
+            margin-bottom: 0.5rem;
+
+        }
+
+        .instructions-box ul {
+          list-style: none;
+          padding: 0;
+          margin-bottom: 1rem;
+            font-size: 0.6rem;
+
+        }
+
+        .instructions-box li {
+          margin-bottom: 0.25rem;
+            font-size: 0.6rem;
+
+        }
+
+        .instructions-box button {
+          padding: 0.5rem 1rem;
+          background-color: #3b82f6;
+          color: #fff;
+          font-family: 'Press Start 2P', cursive;
+          border-radius: 0.375rem;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+          font-size: 0.75rem;
+          border: none;
+        }
+
+        .instructions-box button:hover {
+          background-color: #2563eb;
+        }
+        @media (min-width: 640px) {
+        .instructions-box h2 {
+            font-size: 1.5rem;
+        }
+        .instructions-box ul {
+            font-size: 0.8rem;
+
+        }
+        .instructions-box p{
+                font-size: 0.8rem;
+        }
+
+        .instructions-box li {
+          margin-bottom: 0.25rem;
+              font-size: 0.8rem;
+
+        }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl sm:text-5xl font-['Press_Start_2P'] mb-4 sm:mb-8 text-yellow-400 drop-shadow-glow text-center">
+            PACMAN
+        </h1>
+        <div class="difficulty-buttons">
+            <button class="difficulty-button" data-difficulty="easy">Easy</button>
+            <button class="difficulty-button" data-difficulty="medium">Medium</button>
+            <button class="difficulty-button" data-difficulty="hard">Hard</button>
+        </div>
+        <div id="game-container">
+            <div class="instructions-box" id="instructions">
+              <h2>How to Play</h2>
+              <ul>
+                <li>Use the arrow keys to control Pac-Man.</li>
+                <li>Eat all the dots to win.</li>
+                <li>Avoid the ghosts!</li>
+                <li>Power pellets (larger dots) let you eat ghosts for a short time.</li>
+              </ul>
+                <p>Choose a difficulty level and press "Play Again" to start.</p>
+
+              <button id="close-instructions">Got it!</button>
+            </div>
+            <canvas id="game-canvas"></canvas>
+            <div class="game-over-overlay" style="display: none;">
+                <div class="game-over-content">
+                    <h2 class="game-over-title">GAME OVER</h2>
+                    <p class="game-over-score">Final Score: <span id="final-score">0</span></p>
+                    <button class="play-again-button">Play Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Game Constants
+    const WALL_COLOR = '#2121ff';
+    const DOT_COLOR = '#ffffff';
+    const PACMAN_COLOR = '#ffff00';
+    const GHOST_COLORS = [
+        '#ff0000',
+        '#00ffff',
+        '#ffb8ff',
+        '#ffb852'
+    ];
+    const SCARED_COLOR = '#2121ff'; // Color for scared ghosts
+    const SCARED_TIME = 5000;    // Time ghosts stay scared (in milliseconds)
+
+    let canvas, ctx, CELL_SIZE;
+    let pacman, ghosts;
+    let gameBoard, intervalId;
+    let gameOver = false;
+    let finalScore = 0;
+    let dimensions = { width: 0, height: 0 };
+    let difficulty = 'medium';
+    let gameSpeed = 150;
+    let ghostAiAggressiveness = 0.1;
+    let queuedMoves = [];
+    let scaredTimeoutId = null; // To store the timeout ID for scared ghosts
+
+
+    const container = document.querySelector('.container');
+    const canvasElement = document.getElementById('game-canvas');
+    const gameOverOverlay = document.querySelector('.game-over-overlay');
+    const finalScoreDisplay = document.getElementById('final-score');
+    const playAgainButton = document.querySelector('.play-again-button');
+    const difficultyButtons = document.querySelectorAll('.difficulty-button');
+    const instructionsBox = document.getElementById('instructions');
+    const closeInstructionsButton = document.getElementById('close-instructions');
+
+    const updateDimensions = () => {
+      const width = Math.min(container.clientWidth - 32, 800);
+      const height = width * 0.75;
+      dimensions = { width, height };
+
+      if (canvas) {
+          canvas.width = dimensions.width;
+          canvas.height = dimensions.height;
+          CELL_SIZE = dimensions.width / 28;
+      }
+    };
+
+    updateDimensions();
+    const resizeObserver = new ResizeObserver(updateDimensions);
+    resizeObserver.observe(container);
+    window.addEventListener('resize', updateDimensions);
+
+
+    difficultyButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            difficulty = this.dataset.difficulty;
+            difficultyButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            switch (difficulty) {
+                case 'easy':
+                    gameSpeed = 250;
+                    ghostAiAggressiveness = 0.05;
+                    break;
+                case 'medium':
+                    gameSpeed = 150;
+                    ghostAiAggressiveness = 0.1;
+                    break;
+                case 'hard':
+                    gameSpeed = 100;
+                    ghostAiAggressiveness = 0.2;
+                    break;
+            }
+            initGame();
+        });
+    });
+
+    document.querySelector(`[data-difficulty="${difficulty}"]`).classList.add('active');
+
+    closeInstructionsButton.addEventListener('click', () => {
+      instructionsBox.style.display = 'none';
+      if (!intervalId) {
+        initGame();
+      }
+    });
+
+    function initGame() {
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
+
+        gameOver = false;
+        gameOverOverlay.style.display = 'none';
+
+        gameBoard = `
+            111111111111111111111111111
+            100000000001000000001000001
+            101101111101011111001111101
+            102000000000000000201000001
+            101101101111101101101111101
+            100001000001000001001000001
+            111101111101111101111101111
+            111101000000000101111101111
+            111101101G01101101111101111
+            000000001G10000000000000000
+            111101101111101101111101111
+            111101000000000101111101111
+            111101101111101101111101111
+            100000000001000000001000001
+            102000000001000000001000201
+            100000000001000000001000001
+            111111111111111111111111111
+        `.trim().split('\n').map(row => row.trim().split(''));
+
+
+        canvas = canvasElement;
+        ctx = canvas.getContext('2d');
+        canvas.width = dimensions.width;
+        canvas.height = dimensions.height;
+        CELL_SIZE = dimensions.width / 28;
+
+        pacman = {
+            x: 1,
+            y: 1,
+            direction: 0,
+            mouthOpen: true,
+            score: 0
+        };
+
+        ghosts = [
+            { x: 9, y: 8, direction: 0, color: GHOST_COLORS[0], scared: false },
+            { x: 10, y: 8, direction: 2, color: GHOST_COLORS[1], scared: false },
+            { x: 9, y: 9, direction: 1, color: GHOST_COLORS[2], scared: false },
+            { x: 10, y: 9, direction: 3, color: GHOST_COLORS[3], scared: false }
+        ];
+
+        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('keyup', handleKeyUp);
+        intervalId = setInterval(gameLoop, gameSpeed);
+        playAgainButton.addEventListener('click', initGame);
+        canvasElement.focus();
+    }
+
+
+    function drawWall(x, y) {
+        ctx.fillStyle = WALL_COLOR;
+        ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        ctx.fillStyle = '#0000ff';
+        ctx.fillRect(
+            x * CELL_SIZE + 2,
+            y * CELL_SIZE + 2,
+            CELL_SIZE - 4,
+            CELL_SIZE - 4
+        );
+    }
+
+    function drawDot(x, y, isPower) {
+        ctx.fillStyle = DOT_COLOR;
+        ctx.beginPath();
+        ctx.arc(
+            x * CELL_SIZE + CELL_SIZE / 2,
+            y * CELL_SIZE + CELL_SIZE / 2,
+            isPower ? 8 : 3,
+            0,
+            Math.PI * 2
+        );
+        ctx.fill();
+    }
+
+    function drawPacman() {
+        ctx.save();
+        ctx.translate(
+            pacman.x * CELL_SIZE + CELL_SIZE / 2,
+            pacman.y * CELL_SIZE + CELL_SIZE / 2
+        );
+        ctx.rotate(pacman.direction * Math.PI / 2);
+
+        ctx.fillStyle = PACMAN_COLOR;
+        ctx.beginPath();
+        if (pacman.mouthOpen) {
+            ctx.arc(0, 0, CELL_SIZE / 2 - 2, Math.PI / 6, -Math.PI / 6);
+        } else {
+            ctx.arc(0, 0, CELL_SIZE / 2 - 2, 0, Math.PI * 2);
+        }
+        ctx.lineTo(0, 0);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    function drawGhost(ghost) {
+        ctx.save();
+        ctx.translate(
+            ghost.x * CELL_SIZE + CELL_SIZE / 2,
+            ghost.y * CELL_SIZE + CELL_SIZE / 2
+        );
+
+        // Use scared color if scared, otherwise use original color
+        ctx.fillStyle = ghost.scared ? SCARED_COLOR : ghost.color;
+        ctx.beginPath();
+        ctx.arc(0, -2, CELL_SIZE / 2 - 2, Math.PI, 0);
+        ctx.lineTo(CELL_SIZE / 2 - 2, CELL_SIZE / 2);
+
+        for (let i = 0; i < 3; i++) {
+            ctx.quadraticCurveTo(
+                (CELL_SIZE / 2 - 2) * (0.5 - i * 0.5),
+                CELL_SIZE / 2 + 4,
+                (CELL_SIZE / 2 - 2) * (0.25 - i * 0.5),
+                CELL_SIZE / 2
+            );
+        }
+
+        ctx.lineTo(-CELL_SIZE / 2 + 2, CELL_SIZE / 2);
+        ctx.lineTo(-CELL_SIZE / 2 + 2, -2);
+        ctx.fill();
+
+        const eyeOffset = CELL_SIZE / 6;
+        for (let i = -1; i <= 1; i += 2) {
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(i * eyeOffset, -2, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Adjust pupil logic for scared state
+            let pupilX, pupilY;
+            if (ghost.scared) {
+                // Make pupils look down and slightly outward
+                pupilX = i * 1; // Slightly outward
+                pupilY = 2;     // Look down
+            } else {
+                const dx = pacman.x - ghost.x;
+                const dy = pacman.y - ghost.y;
+                const angle = Math.atan2(dy, dx);
+                pupilX = Math.cos(angle) * 2;
+                pupilY = Math.sin(angle) * 2;
+            }
+
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(
+                i * eyeOffset + pupilX,
+                -2 + pupilY,
+                2,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+        }
+
+        ctx.restore();
+    }
+
+    const directions = [
+        { x: 1, y: 0 },
+        { x: 0, y: 1 },
+        { x: -1, y: 0 },
+        { x: 0, y: -1 }
+    ];
+
+    function updateGame() {
+        if (queuedMoves.length > 0) {
+            const nextMove = queuedMoves.shift();
+            if (canMove(pacman.x, pacman.y, nextMove)) {
+                pacman.direction = nextMove;
+            }
+        }
+
+        if (canMove(pacman.x, pacman.y, pacman.direction)) {
+            pacman.x += directions[pacman.direction].x;
+            pacman.y += directions[pacman.direction].y;
+
+            const cell = gameBoard[pacman.y][pacman.x];
+            if (cell === '0') {
+                pacman.score += 10;
+                gameBoard[pacman.y][pacman.x] = ' ';
+            }  else if (cell === '2') {
+                pacman.score += 50;
+                gameBoard[pacman.y][pacman.x] = ' ';
+                // Scare the ghosts!
+                ghosts.forEach(ghost => { ghost.scared = true; });
+                // Clear any existing timeout
+                if (scaredTimeoutId) {
+                  clearTimeout(scaredTimeoutId);
+                }
+
+                // Set a timeout to end the scared state
+                scaredTimeoutId = setTimeout(() => {
+                    ghosts.forEach(ghost => { ghost.scared = false; });
+                    scaredTimeoutId = null; // Clear the ID
+                }, SCARED_TIME);
+            }
+        }
+
+        ghosts.forEach(ghost => {
+            const possibleDirs = [];
+            for (let i = 0; i < 4; i++) {
+                if (canMove(ghost.x, ghost.y, i)) {
+                    possibleDirs.push(i);
+                }
+            }
+
+             // Increased randomness when scared
+            const randomness = ghost.scared ? 0.5 : ghostAiAggressiveness;
+            if (Math.random() < randomness) {
+                ghost.direction = possibleDirs[Math.floor(Math.random() * possibleDirs.length)];
+            }
+
+            if (canMove(ghost.x, ghost.y, ghost.direction)) {
+                ghost.x += directions[ghost.direction].x;
+                ghost.y += directions[ghost.direction].y;
+            } else {
+                ghost.direction = possibleDirs[Math.floor(Math.random() * possibleDirs.length)];
+            }
+        });
+
+        ghosts.forEach(ghost => {
+        // Check for collisions differently based on scared state
+            if (Math.abs(ghost.x - pacman.x) < 0.5 && Math.abs(ghost.y - pacman.y) < 0.5) {
+                if (ghost.scared) {
+                    // Pac-Man eats the ghost
+                    pacman.score += 200; // Award points
+                    // "Respawn" the ghost (send it back to its starting position)
+                    // You might have different starting positions for each ghost
+                    switch(ghost.color) {
+                        case GHOST_COLORS[0]: ghost.x = 9; ghost.y = 8; break;
+                        case GHOST_COLORS[1]: ghost.x = 10; ghost.y = 8; break;
+                        case GHOST_COLORS[2]: ghost.x = 9; ghost.y = 9; break;
+                        case GHOST_COLORS[3]: ghost.x = 10; ghost.y = 9; break;
+
+                    }
+
+                    ghost.scared = false; // Ghost is no longer scared
+                } else {
+                    // Game over
+                    handleGameOver();
+                }
+            }
+        });
+    }
+
+    function drawGame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let y = 0; y < gameBoard.length; y++) {
+            for (let x = 0; x < gameBoard[y].length; x++) {
+                switch (gameBoard[y][x]) {
+                    case '1': drawWall(x, y); break;
+                    case '0': drawDot(x, y, false); break;
+                    case '2': drawDot(x, y, true); break;
+                }
+            }
+        }
+
+        drawPacman();
+        ghosts.forEach(drawGhost);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 24px "Press Start 2P"';
+        ctx.shadowColor = '#ffffff';
+        ctx.shadowBlur = 10;
+        ctx.fillText(`SCORE: ${pacman.score}`, 20, canvas.height - 20);
+        ctx.shadowBlur = 0;
+    }
+
+    function handleGameOver() {
+        gameOver = true;
+        finalScore = pacman.score;
+        finalScoreDisplay.textContent = finalScore;
+        gameOverOverlay.style.display = 'flex';
+        clearInterval(intervalId);
+    }
+
+
+    function handleKeyDown(e) {
+        if (gameOver) return;
+
+        let nextMove = -1;
+        switch (e.key) {
+            case 'ArrowRight': nextMove = 0; break;
+            case 'ArrowDown':  nextMove = 1; break;
+            case 'ArrowLeft':  nextMove = 2; break;
+            case 'ArrowUp':    nextMove = 3; break;
+        }
+
+        if (nextMove !== -1) {
+            e.preventDefault();
+            queuedMoves.push(nextMove);
+        }
+
+        if (e.key === ' ') {
+            e.preventDefault();
+            pacman.mouthOpen = !pacman.mouthOpen;
+        }
+        canvasElement.focus();
+
+    }
+
+    function handleKeyUp(e) {
+        if (e.key === ' ') {
+            e.preventDefault();
+            pacman.mouthOpen = !pacman.mouthOpen;
+        }
+    }
+
+
+    function canMove(x, y, direction) {
+        const nextX = x + directions[direction].x;
+        const nextY = y + directions[direction].y;
+        const cell = gameBoard[nextY]?.[nextX];
+        return cell !== '1' && cell !== undefined;
+    }
+
+
+    function gameLoop() {
+        if (!gameOver) {
+            pacman.mouthOpen = !pacman.mouthOpen;
+            updateGame();
+            drawGame();
+        }
+    }
+
+    initGame();
+
+</script>
+</body>
+</html>
